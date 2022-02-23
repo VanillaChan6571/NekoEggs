@@ -1,3 +1,5 @@
+# This was modifed by NekoHosting Default Downloads.
+
 settings:
   use-alternate-keepalive: true
   dont-send-useless-entity-packets: false
