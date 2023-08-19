@@ -155,13 +155,13 @@ world-settings:
     prevent-moving-into-unloaded-chunks: true
     count-all-mobs-for-spawning: true
     spawn-limits:
-      monster: 150
-      creature: 150
-      ambient: 100
-      axolotls: 10
-      underground_water_creature: 20
-      water_creature: 10
-      water_ambient: 10
+      monster: 20
+      creature: 12
+      ambient: 4
+      axolotls: 4
+      underground_water_creature: 4
+      water_creature: 4
+      water_ambient: 4
     ender-dragons-death-always-places-dragon-egg: true
     experience-merge-max-value: 5
     allow-using-signs-inside-spawn-protection: true
