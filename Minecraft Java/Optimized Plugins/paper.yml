@@ -155,15 +155,15 @@ world-settings:
     prevent-moving-into-unloaded-chunks: true
     count-all-mobs-for-spawning: true
     spawn-limits:
-      monster: 20
-      creature: 12
-      ambient: 4
-      axolotls: 4
-      underground_water_creature: 4
-      water_creature: 4
-      water_ambient: 4
+      monster: 16
+      creature: 5
+      ambient: 5
+      axolotls: 5
+      underground_water_creature: 3
+      water_creature: 3
+      water_ambient: 3
     ender-dragons-death-always-places-dragon-egg: true
-    experience-merge-max-value: 5
+    experience-merge-max-value: 6
     allow-using-signs-inside-spawn-protection: true
     wandering-trader:
       spawn-minute-length: 1200
@@ -190,28 +190,28 @@ world-settings:
     despawn-ranges:
       monster:
         soft: 32
-        hard: 96
+        hard: 84
       creature:
         soft: 32
-        hard: 96
+        hard: 84
       ambient:
         soft: 32
-        hard: 96
+        hard: 84
       axolotls:
         soft: 32
-        hard: 96
+        hard: 84
       underground_water_creature:
         soft: 32
-        hard: 96
+        hard: 84
       water_creature:
         soft: 32
-        hard: 96
+        hard: 84
       water_ambient:
         soft: 32
-        hard: 64
+        hard: 56
       misc:
         soft: 32
-        hard: 96
+        hard: 84
     falling-block-height-nerf: 0
     tnt-entity-height-nerf: 0
     slime-spawn-height:
