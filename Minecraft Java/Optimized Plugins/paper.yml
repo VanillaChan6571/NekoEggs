@@ -121,13 +121,13 @@ settings:
         action: DROP
 world-settings:
   default:
-    delay-chunk-unloads-by: 12s
+    delay-chunk-unloads-by: 8s
     disable-teleportation-suffocation-check: false
     generator-settings:
       flat-bedrock: true
     piglins-guard-chests: true
     should-remove-dragon: false
-    max-auto-save-chunks-per-tick: 24
+    max-auto-save-chunks-per-tick: 12
     baby-zombie-movement-modifier: 0.5
     optimize-explosions: true
     use-vanilla-world-scoreboard-name-coloring: false
