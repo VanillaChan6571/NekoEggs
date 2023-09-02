@@ -9,23 +9,29 @@ settings:
   deprecated-verbose: default
   shutdown-message: Kittens were told to shutdown this server!
   minimum-api: none
+#This Controls how many mobs per player.
+#Note that the lower, the better tps.
 spawn-limits:
-  monsters: 40
+  monsters: 25
   animals: 15
   water-animals: 15
   water-ambient: 20
-  water-underground-creature: 15
-  axolotls: 15
-  ambient: 15
+  water-underground-creature: 10
+  axolotls: 5
+  ambient: 10
+#This is optimized to load 100 entities in total per player.
 chunk-gc:
   period-in-ticks: 600
+#This Controls how mobs spawn per tick.
+#Note that the lower, the more attempts spawn.
+#This can cause spawning limits to be broken sometimes.
 ticks-per:
-  animal-spawns: 10
-  monster-spawns: 10
-  water-spawns: 10
-  water-ambient-spawns: 10
-  water-underground-creature-spawns: 10
-  axolotl-spawns: 10
-  ambient-spawns: 10
+  animal-spawns: 400
+  monster-spawns: 50
+  water-spawns: 400
+  water-ambient-spawns: 400
+  water-underground-creature-spawns: 400
+  axolotl-spawns: 400
+  ambient-spawns: 400
   autosave: 6000
 aliases: now-in-commands.yml
