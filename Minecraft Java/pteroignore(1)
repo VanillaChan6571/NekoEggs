@@ -1,0 +1,6 @@
+# Neko Won't Backup The Following Unless Modified Below.
+server.jar
+cache/*
+libraries/*
+logs/*
+versions/*
