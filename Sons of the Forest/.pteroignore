@@ -1,0 +1,33 @@
+# Neko Won't Backup The Following Unless Modified Below.
+# Sons of the Forest (pteroignore)
+.cache/*
+.config/*
+.local/*
+.steam/*
+.wine/*
+appcache/*
+config/*
+logs/*
+SonsOfTheForestDS_Data/*
+Steam/*
+steamapps/*
+steamcmd/*
+steamcmd_sotf_auto/*
+.wget-hsts
+baselib.dll
+consoleparser.exe
+GameAssembly.dll
+nvgx_dlss.dll
+NVUnityPlugin.dll
+SonsOfTheForestDS.exe
+StartSOFTDedicated.bat
+steam_appid.txt
+steamclient.dll
+steamclient64.dll
+tier0_s.dll
+tier0_s64.dll
+UnityCrashHandler64.exe
+UnityPlayer.dll
+VerifyUpdateSOFTDedicated.bat
+vstdlib_s.dll
+vstdlib_s64.dll
