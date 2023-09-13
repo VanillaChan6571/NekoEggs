@@ -1,4 +1,5 @@
 # Neko Won't Backup The Following Unless Modified Below.
+# Minecraft (pteroignore)
 server.jar
 cache/*
 libraries/*
