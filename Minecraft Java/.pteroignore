@@ -1,6 +1,7 @@
 # Neko Won't Backup The Following Unless Modified Below.
 # Minecraft (pteroignore)
 server.jar
+server.jar.old
 cache/*
 libraries/*
 logs/*
