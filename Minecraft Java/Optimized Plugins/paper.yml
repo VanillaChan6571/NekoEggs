@@ -11,7 +11,7 @@
 # Docs: https://paper.readthedocs.org/ 
 #
 # This was modifed by NekoHosting Default Downloads.
-# VERSION: 1.3
+# VERSION: 1.4
 
 verbose: false
 messages:
@@ -99,6 +99,9 @@ settings:
     threads: -1
   unsupported-settings:
     allow-permanent-block-break-exploits: true
+    allow-grindstone-overstacking: true
+    allow-tripwire-disarming-expliots: true
+    allow-unsafe-end-portal-teleportation: true
     allow-piston-duplication: true
     perform-username-validation: true
     allow-headless-pistons: true
@@ -156,8 +159,8 @@ world-settings:
     prevent-moving-into-unloaded-chunks: true
     count-all-mobs-for-spawning: true
     spawn-limits:
-      monster: 25
-      creature: 15
+      monster: 40
+      creature: 20
       ambient: 10
       axolotls: 5
       underground_water_creature: 10
