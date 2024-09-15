@@ -11,7 +11,7 @@
 # Docs: https://paper.readthedocs.org/ 
 #
 # This was modifed by NekoHosting Default Downloads.
-# VERSION: 1.4
+# VERSION: 1.5.1
 
 verbose: false
 messages:
@@ -353,7 +353,14 @@ world-settings:
       small_fireball: -1
     alt-item-despawn-rate:
       enabled: true
+      # NOTE 240 = Roughly 12 Seconds.. // Double it (240 -> 480) for 24 Seconds, we feel like 12 seconds is enough for farms.
+      # You Can Modify / Add / Remove Items if you think they are effecting your plugins/gameplay.
       items:
+        STRING: 240
+        GOLDEN_SWORD: 240
+        SPIDER_EYE: 240
+        ROTTEN_FLESH: 240
+        POPPY: 240
         COBBLESTONE: 240
         STONE: 240
         SAND: 240
