@@ -6,8 +6,8 @@
     },
     "exported_at": "2025-01-10T22:02:04-07:00",
     "name": "MariaDB 11.4",
-    "author": "parker@parkervcp.com",
-    "description": "One of the most popular database servers. Made by the original developers of MySQL. Guaranteed to stay open source.",
+    "author": "admin@nekohosting.gg",
+    "description": "A Fork of Parker Egg, One of the most popular database servers. Made by the original developers of MySQL. Guaranteed to stay open source.",
     "features": null,
     "docker_images": {
         "MariaDB 11.4": "ghcr.io\/parkervcp\/yolks:mariadb_11.4"
