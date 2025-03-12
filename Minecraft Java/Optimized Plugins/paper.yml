@@ -105,6 +105,8 @@ settings:
     allow-piston-duplication: true
     perform-username-validation: true
     allow-headless-pistons: true
+    skip-tripwire-hook-placement-validation: true
+    skip-vanilla-damage-tick-when-shield-blocked: false 
     allow-permanent-block-break-exploits-readme: This setting controls if players
       should be able to break bedrock, end portals and other intended to be permanent
       blocks.
@@ -192,30 +194,30 @@ world-settings:
       MinimumTicks: 100
       MaximumTicks: 600
     despawn-ranges:
-      monster:
-        soft: 32
-        hard: 84
-      creature:
-        soft: 32
-        hard: 84
       ambient:
+        hard: 72
         soft: 32
-        hard: 84
       axolotls:
+        hard: 72
         soft: 32
-        hard: 84
-      underground_water_creature:
+      creature:
+        hard: 72
         soft: 32
-        hard: 84
-      water_creature:
-        soft: 32
-        hard: 84
-      water_ambient:
-        soft: 32
-        hard: 56
       misc:
+        hard: 72
         soft: 32
-        hard: 84
+      monster:
+        hard: 72
+        soft: 32
+      underground_water_creature:
+        hard: 72
+        soft: 32
+      water_ambient:
+        hard: 72
+        soft: 32
+      water_creature:
+        hard: 72
+        soft: 32
     falling-block-height-nerf: 0
     tnt-entity-height-nerf: 0
     slime-spawn-height:
