@@ -1,0 +1,102 @@
+{
+    "_comment": "NekoHosting Pterodactyl Egg for Hytale Server - v1.3.0",
+    "meta": {
+        "version": "PTDL_v2",
+        "update_url": null
+    },
+    "exported_at": "2026-01-13T00:00:00+00:00",
+    "name": "Hytale v1.3.0",
+    "author": "admin@nekohosting.gg",
+    "description": "Hytale server with integrated downloader for automatic updates. Requires in-game authentication on first run using /auth login device command.",
+    "features": null,
+    "docker_images": {
+        "ghcr.io/parkervcp/yolks:java_25": "ghcr.io/parkervcp/yolks:java_25"
+    },
+    "file_denylist": [],
+    "startup": "bash launcher.sh",
+    "config": {
+        "files": "{}",
+        "startup": "{\r\n    \"done\": \"Hytale Server Booted!\"\r\n}",
+        "logs": "{}",
+        "stop": "stop"
+    },
+    "scripts": {
+        "installation": {
+            "script": "#!/bin/bash\n\n# Hytale Server Installation Script\nset -e\n\ncd /mnt/server\n\n# Determine architecture\nARCH=\"amd64\"\nif [ \"$(uname -m)\" = \"aarch64\" ]; then\n    ARCH=\"arm64\"\nfi\n\necho \"==================================\"\necho \"Hytale Server Installation\"\necho \"==================================\"\necho \"\"\n\n# Setup machine-id for Java/Sentry\necho \"[1/5] Setting up machine-id...\"\nif [ ! -f \"/etc/machine-id\" ]; then\n    echo \"Creating machine-id for hardware UUID...\"\n    # Try to create in /etc (requires permissions)\n    MACHINE_ID=\"$(cat /proc/sys/kernel/random/uuid | tr -d '-')\"\n    echo \"$MACHINE_ID\" | tee /etc/machine-id > /dev/null 2>&1 ||     echo \"$MACHINE_ID\" > machine-id\n    \n    if [ -f \"machine-id\" ]; then\n        echo \"Created machine-id in working directory (no /etc write access)\"\n        echo \"Note: For persistent machine-id, ask admin to mount /etc/machine-id\"\n    fi\nelse\n    echo \"/etc/machine-id already exists\"\nfi\n\n# Download hytale-downloader\necho \"[2/5] Downloading hytale-downloader...\"\nDOWNLOADER_URL=\"https://downloader.hytale.com/hytale-downloader.zip\"\ncurl -sSL \"${DOWNLOADER_URL}\" -o hytale-downloader.zip\n\necho \"[3/5] Extracting downloader...\"\nunzip -q hytale-downloader.zip\n\n# Find and make the Linux binary executable\nDOWNLOADER_BINARY=\"hytale-downloader-linux-${ARCH}\"\nif [ -f \"${DOWNLOADER_BINARY}\" ]; then\n    chmod +x \"${DOWNLOADER_BINARY}\"\n    ln -sf \"${DOWNLOADER_BINARY}\" hytale-downloader\n    echo \"Using ${DOWNLOADER_BINARY}\"\nelse\n    echo \"ERROR: Could not find ${DOWNLOADER_BINARY}\"\n    echo \"Available files:\"\n    ls -la\n    exit 1\nfi\n\nrm hytale-downloader.zip\n\n# Create launcher script\necho \"[4/5] Creating launcher...\"\ncat > launcher.sh << 'LAUNCHER_EOF'\n#!/bin/bash\n# Launcher - decides whether to use auto-update wrapper or direct start\n\nif [ \"${AUTO_UPDATE}\" = \"0\" ]; then\n    # Direct start - skip auto-update, use proper port binding\n    echo \"Auto-update disabled, starting server directly...\"\n    echo \"\"\n    \n    # Find assets file\n    ASSETS_FILE=\"\"\n    if [ -f \"./assets.zip\" ]; then\n        ASSETS_FILE=\"./assets.zip\"\n    elif [ -f \"./Assets.zip\" ]; then\n        ASSETS_FILE=\"./Assets.zip\"\n    elif [ -f \"./PathToAssets.zip\" ]; then\n        ASSETS_FILE=\"./PathToAssets.zip\"\n    else\n        ASSETS_FILE=$(find . -maxdepth 1 -name \"*.zip\" -type f | head -n 1)\n    fi\n    \n    if [ -z \"$ASSETS_FILE\" ]; then\n        echo \"ERROR: No assets file found!\"\n        exit 1\n    fi\n    \n    echo \"Using assets: $ASSETS_FILE\"\n    echo \"Binding to: 0.0.0.0:${SERVER_PORT:-5520}\"\n    echo \"Auth mode: ${AUTH_MODE:-authenticated}\"\n    if [ \"${ENABLE_BACKUPS}\" = \"1\" ]; then\n        echo \"Backups enabled: every ${BACKUP_FREQUENCY:-30} minutes, max ${BACKUP_MAX_COUNT:-5} backups\"\n    fi\n    echo \"\"\n    echo \"===================================\"\n    echo \"AUTHENTICATE YOUR SERVER\"\n    echo \"===================================\"\n    echo \"After server starts, run in console:\"\n    echo \"  /auth login device\"\n    echo \"\"\n    echo \"Then follow the URL and code shown.\"\n    echo \"Players cannot connect until authenticated!\"\n    echo \"===================================\"\n    echo \"\"\n    \n    # Build Java command with optional parameters\n    JAVA_ARGS=\"-Xms128M -Xmx${SERVER_MEMORY:-2048}M -jar HytaleServer.jar\"\n    JAVA_ARGS=\"$JAVA_ARGS --assets \\\"$ASSETS_FILE\\\"\"\n    JAVA_ARGS=\"$JAVA_ARGS --bind 0.0.0.0:${SERVER_PORT:-5520}\"\n    \n    # Add auth mode if specified\n    if [ -n \"${AUTH_MODE}\" ]; then\n        JAVA_ARGS=\"$JAVA_ARGS --auth-mode ${AUTH_MODE}\"\n    fi\n    \n    # Add backup settings if enabled\n    if [ \"${ENABLE_BACKUPS}\" = \"1\" ]; then\n        JAVA_ARGS=\"$JAVA_ARGS --backup\"\n        if [ -n \"${BACKUP_FREQUENCY}\" ]; then\n            JAVA_ARGS=\"$JAVA_ARGS --backup-frequency ${BACKUP_FREQUENCY}\"\n        fi\n        if [ -n \"${BACKUP_MAX_COUNT}\" ]; then\n            JAVA_ARGS=\"$JAVA_ARGS --backup-max-count ${BACKUP_MAX_COUNT}\"\n        fi\n    fi\n    \n    # Add early plugins flag if enabled\n    if [ \"${ACCEPT_EARLY_PLUGINS}\" = \"1\" ]; then\n        JAVA_ARGS=\"$JAVA_ARGS --accept-early-plugins\"\n    fi\n    \n    eval exec java $JAVA_ARGS\nelse\n    # Use auto-update wrapper\n    exec bash start-hytale.sh\nfi\n\nLAUNCHER_EOF\n\nchmod +x launcher.sh\n\n# Create auto-update wrapper script\necho \"[5/5] Creating auto-update wrapper...\"\ncat > start-hytale.sh << 'WRAPPER_EOF'\n#!/bin/bash\n# Hytale Server Startup Wrapper\n\nset -e\n\necho \"===================================\"\necho \"Hytale Server Startup\"\necho \"===================================\"\necho \"\"\n\n# Check if downloader exists\nif [ ! -f \"./hytale-downloader\" ]; then\n    echo \"ERROR: hytale-downloader not found!\"\n    echo \"Please reinstall the server.\"\n    exit 1\nfi\n\n# Check if we need to download server files\nFIRST_TIME_DOWNLOAD=false\nif [ ! -f \"./HytaleServer.jar\" ]; then\n    FIRST_TIME_DOWNLOAD=true\n    echo \"===================================\"\n    echo \"FIRST TIME SETUP\"\n    echo \"===================================\"\n    echo \"\"\n    echo \"Downloading Hytale server and assets...\"\n    echo \"You will need to authenticate with your Hytale account.\"\n    echo \"\"\n    echo \"Please watch for the authentication URL and code below:\"\n    echo \"\"\n    \n    ./hytale-downloader -patchline \"${PATCHLINE:-release}\" -download-path hytale-download.zip -skip-update-check\n    \n    echo \"\"\n    echo \"Extracting files...\"\n    unzip -q -o hytale-download.zip\n    \n    # Check if files are in a Server subdirectory and move them\n    if [ -d \"Server\" ] && [ -f \"Server/HytaleServer.jar\" ]; then\n        echo \"Moving files from Server/ directory...\"\n        mv Server/* . 2>/dev/null || true\n        rmdir Server 2>/dev/null || true\n    fi\n    \n    if [ -f \"HytaleServer.jar\" ]; then\n        echo \"Download complete!\"\n    else\n        echo \"ERROR: HytaleServer.jar not found after download\"\n        echo \"Directory contents:\"\n        ls -la\n        exit 1\n    fi\n    \n    rm hytale-download.zip\n    echo \"\"\nfi\n\n# Auto-update if enabled (skip if we just did first-time download)\nif [ \"${AUTO_UPDATE}\" = \"1\" ] && [ \"${FIRST_TIME_DOWNLOAD}\" = \"false\" ]; then\n    echo \"Checking for updates...\"\n    \n    # Get current version\n    CURRENT_VERSION=$(./hytale-downloader -print-version -patchline \"${PATCHLINE:-release}\" 2>/dev/null || echo \"unknown\")\n    echo \"Current version: ${CURRENT_VERSION}\"\n    \n    # Download latest\n    echo \"Downloading latest version...\"\n    ./hytale-downloader -patchline \"${PATCHLINE:-release}\" -download-path hytale-download.zip -skip-update-check\n    \n    echo \"Extracting files...\"\n    unzip -q -o hytale-download.zip\n    \n    # Check if files are in a Server subdirectory and move them\n    if [ -d \"Server\" ] && [ -f \"Server/HytaleServer.jar\" ]; then\n        echo \"Moving files from Server/ directory...\"\n        mv Server/* . 2>/dev/null || true\n        rmdir Server 2>/dev/null || true\n    fi\n    \n    if [ -f \"HytaleServer.jar\" ]; then\n        echo \"Update complete!\"\n    fi\n    \n    rm hytale-download.zip\n    echo \"\"\nfi\n\n# Start the server\necho \"===================================\"\necho \"Starting Hytale Server...\"\necho \"===================================\"\necho \"\"\n\n# Check for server files\nif [ ! -f \"./HytaleServer.jar\" ]; then\n    echo \"ERROR: HytaleServer.jar not found!\"\n    echo \"Please reinstall the server.\"\n    exit 1\nfi\n\n# Find assets file\nASSETS_FILE=\"\"\nif [ -f \"./assets.zip\" ]; then\n    ASSETS_FILE=\"./assets.zip\"\nelif [ -f \"./Assets.zip\" ]; then\n    ASSETS_FILE=\"./Assets.zip\"\nelif [ -f \"./PathToAssets.zip\" ]; then\n    ASSETS_FILE=\"./PathToAssets.zip\"\nelse\n    # Try to find any .zip file that might be assets\n    ASSETS_FILE=$(find . -maxdepth 1 -name \"*.zip\" -type f | head -n 1)\nfi\n\nif [ -z \"$ASSETS_FILE\" ]; then\n    echo \"ERROR: No assets file found!\"\n    echo \"Cannot start server without assets.\"\n    exit 1\nfi\n\necho \"Using assets: $ASSETS_FILE\"\necho \"Binding to: 0.0.0.0:${SERVER_PORT:-5520}\"\necho \"Auth mode: ${AUTH_MODE:-authenticated}\"\nif [ \"${ENABLE_BACKUPS}\" = \"1\" ]; then\n    echo \"Backups enabled: every ${BACKUP_FREQUENCY:-30} minutes, max ${BACKUP_MAX_COUNT:-5} backups\"\nfi\necho \"\"\necho \"===================================\"\necho \"AUTHENTICATE YOUR SERVER\"\necho \"===================================\"\necho \"After server starts, run in console:\"\necho \"  /auth login device\"\necho \"\"\necho \"Then follow the URL and code shown.\"\necho \"Players cannot connect until authenticated!\"\necho \"===================================\"\necho \"\"\n\n# Build Java command with optional parameters\nJAVA_ARGS=\"-Xms128M -Xmx${SERVER_MEMORY:-2048}M -jar HytaleServer.jar\"\nJAVA_ARGS=\"$JAVA_ARGS --assets \\\"$ASSETS_FILE\\\"\"\nJAVA_ARGS=\"$JAVA_ARGS --bind 0.0.0.0:${SERVER_PORT:-5520}\"\n\n# Add auth mode if specified\nif [ -n \"${AUTH_MODE}\" ]; then\n    JAVA_ARGS=\"$JAVA_ARGS --auth-mode ${AUTH_MODE}\"\nfi\n\n# Add backup settings if enabled\nif [ \"${ENABLE_BACKUPS}\" = \"1\" ]; then\n    JAVA_ARGS=\"$JAVA_ARGS --backup\"\n    if [ -n \"${BACKUP_FREQUENCY}\" ]; then\n        JAVA_ARGS=\"$JAVA_ARGS --backup-frequency ${BACKUP_FREQUENCY}\"\n    fi\n    if [ -n \"${BACKUP_MAX_COUNT}\" ]; then\n        JAVA_ARGS=\"$JAVA_ARGS --backup-max-count ${BACKUP_MAX_COUNT}\"\n    fi\nfi\n\n# Add early plugins flag if enabled\nif [ \"${ACCEPT_EARLY_PLUGINS}\" = \"1\" ]; then\n    JAVA_ARGS=\"$JAVA_ARGS --accept-early-plugins\"\nfi\n\neval exec java $JAVA_ARGS\nfi\n\nWRAPPER_EOF\n\nchmod +x start-hytale.sh\n\necho \"\"\necho \"==================================\"\necho \"Installation Complete!\"\necho \"==================================\"\necho \"\"\necho \"IMPORTANT: First Startup Process\"\necho \"\"\necho \"When you START the server:\"\necho \"\"\necho \"1. Server will download game files (if auto-update enabled)\"\necho \"2. You'll see an authentication URL and code\"\necho \"3. Open the URL and authenticate with your Hytale account\"\necho \"4. Files will download and server will start\"\necho \"5. Run in console: /auth login device\"\necho \"6. Authenticate again for server access\"\necho \"7. Players can now connect!\"\necho \"\"\necho \"==================================\"\necho \"\"\necho \"Installation complete! Start your server now.\"\n",
+            "container": "ghcr.io/parkervcp/installers:debian",
+            "entrypoint": "bash"
+        }
+    },
+    "variables": [
+        {
+            "name": "Patchline",
+            "description": "Which patchline to download from (release, pre-release, etc.)",
+            "env_variable": "PATCHLINE",
+            "default_value": "pre-release",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|max:32",
+            "field_type": "text"
+        },
+        {
+            "name": "Auto Update",
+            "description": "Automatically download latest version on server restart. Set to 0 to disable wrapper and use direct startup with proper port binding.",
+            "env_variable": "AUTO_UPDATE",
+            "default_value": "1",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|boolean",
+            "field_type": "text"
+        },
+        {
+            "name": "Auth Mode",
+            "description": "Server authentication mode",
+            "env_variable": "AUTH_MODE",
+            "default_value": "authenticated",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|in:authenticated,offline,insecure",
+            "field_type": "text"
+        },
+        {
+            "name": "Enable Backups",
+            "description": "Enable automatic server backups",
+            "env_variable": "ENABLE_BACKUPS",
+            "default_value": "0",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|boolean",
+            "field_type": "text"
+        },
+        {
+            "name": "Backup Frequency",
+            "description": "Backup frequency in minutes (only used if backups enabled)",
+            "env_variable": "BACKUP_FREQUENCY",
+            "default_value": "30",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|integer|min:1",
+            "field_type": "text"
+        },
+        {
+            "name": "Backup Max Count",
+            "description": "Maximum number of backups to keep (only used if backups enabled)",
+            "env_variable": "BACKUP_MAX_COUNT",
+            "default_value": "5",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|integer|min:1",
+            "field_type": "text"
+        },
+        {
+            "name": "Accept Early Plugins",
+            "description": "Allow loading of early plugins (unsupported, may cause stability issues)",
+            "env_variable": "ACCEPT_EARLY_PLUGINS",
+            "default_value": "0",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|boolean",
+            "field_type": "text"
+        }
+    ]
+}
