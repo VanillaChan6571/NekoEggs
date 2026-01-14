@@ -11,7 +11,7 @@
 # Forums: http://www.spigotmc.org/
 #
 # This was modifed by NekoHosting Default Downloads.
-# VERSION: 1.3
+# VERSION: 1.4
 
 settings:
   debug: false
@@ -126,22 +126,6 @@ world-settings:
       hopper-check: 1
     hopper-amount: 1
     dragon-death-sound-radius: 0
-    seed-village: 10387312
-    seed-desert: 14357617
-    seed-igloo: 14357618
-    seed-jungle: 14357619
-    seed-swamp: 14357620
-    seed-monument: 10387313
-    seed-shipwreck: 165745295
-    seed-ocean: 14357621
-    seed-outpost: 165745296
-    seed-endcity: 10387313
-    seed-slime: 987234911
-    seed-bastion: 30084232
-    seed-fortress: 30084232
-    seed-mansion: 10387319
-    seed-fossil: 14357921
-    seed-portal: 34222645
     hunger:
       jump-walk-exhaustion: 0.05
       jump-sprint-exhaustion: 0.2
