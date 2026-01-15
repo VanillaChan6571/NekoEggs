@@ -24,17 +24,42 @@ find_assets_file() {
     echo "$ASSETS_FILE"
 }
 
+setup_downloader_credentials() {
+    # If local credentials exist, use them (downloader auto-refreshes)
+    if [ -f ".hytale-downloader-credentials.json" ]; then
+        return 0
+    fi
+
+    # Otherwise, seed from panel if available
+    if [ -n "${HYTALE_DOWNLOADER_CREDENTIALS}" ]; then
+        echo "Seeding downloader credentials from panel..."
+        echo "${HYTALE_DOWNLOADER_CREDENTIALS}" > .hytale-downloader-credentials.json
+        return 0
+    fi
+
+    return 1
+}
+
 download_server_files() {
     echo "==================================="
     echo "DOWNLOADING HYTALE SERVER"
     echo "==================================="
     echo ""
-    echo "Downloading server and assets..."
-    echo "You will need to authenticate with your Hytale account."
+
+    # Try to set up credentials from panel first
+    if setup_downloader_credentials; then
+        echo "Using panel-configured credentials..."
+    elif [ -f ".hytale-downloader-credentials.json" ]; then
+        echo "Using saved downloader credentials..."
+    else
+        echo "Downloading server and assets..."
+        echo "You will need to authenticate with your Hytale account."
+        echo ""
+        echo "Please watch for the authentication URL and code below:"
+        echo "(This is a ONE-TIME setup - credentials will be saved)"
+    fi
     echo ""
-    echo "Please watch for the authentication URL and code below:"
-    echo ""
-    
+
     ./hytale-downloader -patchline "${PATCHLINE:-release}" -download-path hytale-download.zip -skip-update-check
     
     echo ""
@@ -134,17 +159,28 @@ start_server() {
         echo "Backups: enabled (every ${BACKUP_FREQUENCY:-30} min, max ${BACKUP_MAX_COUNT:-5})"
         echo ""
     fi
-    
-    echo "==================================="
-    echo "AUTHENTICATE YOUR SERVER"
-    echo "==================================="
-    echo "After server starts, run in console:"
-    echo "  /auth login device"
-    echo ""
-    echo "Then follow the URL and code shown."
-    echo "Players cannot connect until authenticated!"
-    echo "==================================="
-    echo ""
+
+    # Check for pre-configured authentication tokens
+    if [ -n "${HYTALE_SERVER_SESSION_TOKEN}" ] && [ -n "${HYTALE_SERVER_IDENTITY_TOKEN}" ]; then
+        echo "==================================="
+        echo "AUTHENTICATION: PRE-CONFIGURED"
+        echo "==================================="
+        echo "Session and identity tokens detected."
+        echo "Server will authenticate automatically!"
+        echo "==================================="
+        echo ""
+    else
+        echo "==================================="
+        echo "AUTHENTICATE YOUR SERVER"
+        echo "==================================="
+        echo "After server starts, run in console:"
+        echo "  /auth login device"
+        echo ""
+        echo "Then follow the URL and code shown."
+        echo "Players cannot connect until authenticated!"
+        echo "==================================="
+        echo ""
+    fi
     
     # Build Java command
     JAVA_ARGS="-Xms128M -Xmx${MAX_HEAP}M"
@@ -204,7 +240,13 @@ start_server() {
     if [ "${HYTALE_ALLOW_OP}" = "1" ]; then
         JAVA_ARGS="$JAVA_ARGS --allow-op"
     fi
-    
+
+    # Pass authentication tokens if configured
+    if [ -n "${HYTALE_SERVER_SESSION_TOKEN}" ] && [ -n "${HYTALE_SERVER_IDENTITY_TOKEN}" ]; then
+        JAVA_ARGS="$JAVA_ARGS --session-token \"${HYTALE_SERVER_SESSION_TOKEN}\""
+        JAVA_ARGS="$JAVA_ARGS --identity-token \"${HYTALE_SERVER_IDENTITY_TOKEN}\""
+    fi
+
     # Start server (exec replaces shell with Java process)
     eval exec java $JAVA_ARGS
 }
